@@ -1,10 +1,4 @@
 #reg {
-  /* container uses global background; spacing is handled inside component */
-  background: transparent;
-}
-
-.bg {
-  /* apply transparent shell to let global animated background show through */
   background: transparent;
 }
 
@@ -13,124 +7,95 @@ form {
   width: 100%;
 }
 
-/* Input visual helpers (will be used alongside Tailwind classes) */
-input[type="text"],
-input[type="email"],
-textarea {
-  transition: box-shadow 160ms ease, transform 160ms ease;
+/* --- FIXED INPUT STYLES FOR BLACK TEXT --- */
+.translucent-card input,
+.translucent-card textarea,
+.input-style {
+  background: #ffffff !important; /* Solid white background */
+  color: #000000 !important;      /* Pure black text */
+  border: 1px solid #cbd5e1;      /* Light gray border */
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  font-weight: 500;               /* Better readability for black text */
+  transition: all 160ms ease;
 }
 
-input:focus, textarea:focus {
-  box-shadow: 0 6px 24px rgba(254,0,0,0.08);
+/* Force placeholder to be a readable gray on the white background */
+.translucent-card input::placeholder,
+.translucent-card textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Focus state for the white inputs */
+.translucent-card input:focus,
+.translucent-card textarea:focus {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 0 0 3px rgba(254, 0, 0, 0.2); /* Red glow around white box */
+  outline: none;
+  border-color: #fe0000;
 }
 
 /* Error helper */
 .text-brand {
-  color: var(--brand-2);
-  min-height: 1.25rem; /* reserve space for error messages */
+  color: #fe0000;
+  min-height: 1.25rem;
 }
 
-/* Make submit button consistent across sizes */
-.btn-gradient {
-  border: none;
-}
-
-/* Small responsive tweak for the card */
-@media (min-width: 768px) {
-  .glass {
-    padding: 28px;
-  }
-}
-
-/* Dark-red translucent card and input styles for register */
+/* --- TRANSLUCENT CARD STYLES --- */
 .translucent-card {
-  /* lighter red glass for better legibility */
-  background: linear-gradient(180deg, rgba(254,0,0,0.02), rgba(80,12,12,0.08));
-  border: 1px solid rgba(254,0,0,0.08);
-  backdrop-filter: blur(15px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.02), 0 0 20px rgba(254,0,0,0.3), 0 0 40px rgba(254,0,0,0.15);
-  transition: transform 200ms cubic-bezier(.2,.9,.2,1), box-shadow 200ms cubic-bezier(.2,.9,.2,1), border-color 200ms ease;
-}
-.translucent-card:hover { transform: translateY(-4px); box-shadow: 0 18px 48px rgba(0,0,0,0.60), 0 0 30px rgba(254,0,0,0.4), 0 0 60px rgba(254,0,0,0.2); border-color: rgba(254,0,0,0.16); }
-
-.translucent-card input,
-.translucent-card textarea {
-  /* slightly brighter inputs to improve contrast */
-  background: rgba(255,255,255,0.08);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.12);
-}
-.translucent-card input::placeholder,
-.translucent-card textarea::placeholder {
-  color: rgba(255,255,255,0.65);
-}
-.translucent-card input:focus,
-.translucent-card textarea:focus {
-  box-shadow: 0 8px 28px rgba(254,0,0,0.15);
-  outline: none;
-  border-color: rgba(254,0,0,0.25);
-  background: rgba(255,255,255,0.10);
+  background: linear-gradient(180deg, rgba(254,0,0,0.02), rgba(20, 5, 5, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.8);
 }
 
-/* Make CTA more prominent on the translucent card */
-.translucent-card .btn-gradient {
-  background: linear-gradient(90deg, rgba(255,0,0,0.98), rgba(160,25,25,0.95));
-  box-shadow: 0 12px 36px rgba(254,0,0,0.16);
+.translucent-card label {
+  color: #ffffff !important; /* Keep labels white for contrast against dark card */
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-/* Small touch: slightly stronger text contrast inside the card */
-.translucent-card p, .translucent-card label, .translucent-card span, .translucent-card input, .translucent-card textarea {
-  color: rgba(255,255,255,0.98);
-}
-
-/* Keep required star visible as brand red even when other spans are forced white */
-.translucent-card .text-brand,
-.translucent-card .required-star {
-  color: var(--brand-2) !important;
+/* Submit Button */
+.btn-gradient {
+  background: linear-gradient(90deg, #fe0000, #a01919);
+  border: none;
+  color: white;
   font-weight: 700;
-  margin-left: 0.18rem;
+  cursor: pointer;
 }
 
-/* Custom checkbox visual (white tick only on check) */
-.hidden-checkbox {
-  position: absolute;
-  opacity: 0;
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  pointer-events: auto;
-}
+/* Custom Checkbox remains white/red themed */
 .checkbox-custom {
   width: 18px;
   height: 18px;
-  display: inline-block;
   border-radius: 4px;
-  border: 1.5px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.02);
+  border: 1.5px solid #ffffff;
+  background: transparent;
+  display: inline-block;
   position: relative;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
   flex-shrink: 0;
 }
-.hidden-checkbox:focus + .checkbox-custom {
-  box-shadow: 0 0 0 4px rgba(254,0,0,0.10);
-  outline: none;
+
+.hidden-checkbox:checked + .checkbox-custom {
+  background: #fe0000;
+  border-color: #fe0000;
 }
+
 .hidden-checkbox:checked + .checkbox-custom::after {
   content: "";
   position: absolute;
-  left: 4px;
+  left: 5px;
   top: 1px;
-  width: 6px;
+  width: 5px;
   height: 10px;
-  border: solid #fff;
+  border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
-.hidden-checkbox:checked + .checkbox-custom {
-  background: rgba(255,255,255,0.03);
-  border-color: rgba(255,255,255,0.18);
-}
-
-/* Respect reduced motion */
-.reduced-motion input, .reduced-motion textarea { transition: none !important; transform: none !important; }

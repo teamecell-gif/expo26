@@ -1,21 +1,16 @@
-// Api.js
+// src/Api.js
+import axios from 'axios';
+
+const API = axios.create({
+  baseURL: "http://localhost:5000" // Ensure this matches your backend PORT
+});
+
 export const registerUser = async (formData) => {
-  const response = await fetch(
-    "https://expo-backend-public.onrender.com/register",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    }
-  );
-
-  
-  if (!response.ok) {
-    throw new Error("Email already exist");
+  try {
+    const response = await API.post('/register', formData);
+    return response.data.message;
+  } catch (error) {
+    // This sends the backend error message back to the component
+    throw new Error(error.response?.data?.error || "Backend Server is offline.");
   }
-
-  const responseData = await response.json();
-  return responseData.message; 
 };

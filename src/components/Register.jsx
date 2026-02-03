@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { validateForm } from "../FormValidation";
 import { registerUser } from "../Api";
 import "./Register.css";
-import useReducedMotion from "../hooks/useReducedMotion";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -16,249 +15,149 @@ export default function Register() {
     challan: "",
   });
 
-  const [challan, setChallan] = useState(""); // Challan number state
   const [checkboxChecked, setCheckboxChecked] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
-  const [challanError, setChallanError] = useState(""); // Challan error state
+  const [statusMessage, setStatusMessage] = useState("");
 
   const handleChange = (e) => {
-    setErrors((prevErrors) => ({ ...prevErrors, [e.target.name]: "" }));
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleChallanChange = (e) => {
-    setChallan(e.target.value);
-    formData.challan = e.target.value;
-    setChallanError(""); 
-  };
-
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-   
+    setStatusMessage("");
+    
     const validationErrors = validateForm(formData);
-    setChallanError("");
-
+    if (!checkboxChecked) validationErrors.declaration = "Please accept the declaration.";
+    
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    
-    if (!challan) {
-      throw new Error("Please provide the challan number of your payment.");
-    }
-
-    // Validate acceptance of declaration (checkbox)
-    if (!checkboxChecked) {
-      setErrors(prev => ({ ...prev, declaration: 'Please accept the declaration to continue.' }));
-      return;
-    }
-
     try {
       setLoading(true);
-      const responseMessage = await registerUser(formData); // Expecting only the message
-      setMessage(responseMessage); // Set the success message
+      await registerUser(formData); 
+      
+      setShowSuccess(true);
+      setFormData({ name: "", email: "", startUpSector: "", headquarter: "", linkedin: "", description: "", challan: "" });
+      setCheckboxChecked(false);
     } catch (error) {
-      setMessage(error.message || "An error occurred"); // Display error message to the user
-      if (
-        error.message.includes("Please give challan number of your payment")
-      ) {
-        setChallanError(error.message);
-      }
+      setStatusMessage(error.message || "Connection to port 5000 failed.");
     } finally {
       setLoading(false);
     }
   };
 
-  const reduced = useReducedMotion();
-
   return (
-    <div
-      id="reg"
-      className="bg-black w-full flex flex-col justify-center items-center pb-24 px-4 md:px-0"
-    >
-      <h1 className="text-5xl text-brand mt-10 font-bold px-4 md:px-0" style={{fontFamily: 'Montserrat, sans-serif', fontWeight: 800}}>REGISTER NOW</h1>
+    <div id="reg" className="bg-black w-full flex flex-col justify-center items-center pb-24 px-4 relative min-h-screen">
+      <h1 className="text-5xl text-brand mt-10 font-bold uppercase tracking-tighter">Register Now</h1>
 
-      <motion.div className="flex flex-col mt-10 w-full max-w-3xl mx-auto px-6 translucent-card p-6 text-white rounded-3xl shadow-2xl glass" initial={reduced ? undefined : { opacity: 0, y: 12, scale: 0.98 }} whileInView={reduced ? undefined : { opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, amount: 0.18 }} transition={reduced ? undefined : { duration: 0.6, ease: "easeOut" }}>
-        <div className="h-1/7 flex justify-center items-center mb-6">
-          <p className="text-brand text-2xl font-semibold">Register as a Startup</p>
-        </div>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <motion.div className="flex flex-col mt-10 w-full max-w-3xl glass p-8 text-white rounded-3xl shadow-2xl relative">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
           <div className="flex flex-col">
-            <label htmlFor="name" className="mt-1 font-medium">
-              Startup Name <span className="text-brand required-star" aria-hidden="true">*</span>
-            </label>
-            <input
-              id="name"
-              name="name"
-              required
-              aria-invalid={errors.name ? "true" : "false"}
-              className="bg-white/5 text-white rounded-md px-3 py-2 border border-white/6 focus:outline-none focus:ring-2 focus:ring-[var(--brand-2)] transition"
-              placeholder="Enter your Startup Name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-            />
-            <span className="text-brand">{errors.name}</span>
+            <label className="text-sm font-semibold mb-2">Startup Name *</label>
+            <input name="name" value={formData.name} onChange={handleChange} placeholder="e.g. VNIT Tech" className="input-style text-black" required />
+            {errors.name && <span className="text-xs text-red-500 mt-1">{errors.name}</span>}
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="email" className="mt-1 font-medium">
-              Email <span className="text-brand required-star" aria-hidden="true">*</span>
-            </label>
-            <input
-              id="email"
-              name="email"
-              required
-              aria-invalid={errors.email ? "true" : "false"}
-              className="bg-white/5 text-white rounded-md px-3 py-2 border border-white/6 focus:outline-none focus:ring-2 focus:ring-[var(--brand-2)] transition"
-              placeholder="Enter your email address"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            <span className="text-brand">{errors.email}</span>
+            <label className="text-sm font-semibold mb-2">Email *</label>
+            <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="contact@startup.com" className="input-style text-black" required />
+            {errors.email && <span className="text-xs text-red-500 mt-1">{errors.email}</span>}
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="startUpSector" className="mt-1 font-medium">
-              Startup's Sector <span className="text-brand required-star" aria-hidden="true">*</span>
-            </label>
-            <input
-              id="startUpSector"
-              name="startUpSector"
-              required
-              aria-invalid={errors.startUpSector ? "true" : "false"}
-              className="bg-white/5 text-white rounded-md px-3 py-2 border border-white/6 focus:outline-none focus:ring-2 focus:ring-[var(--brand-2)] transition"
-              placeholder="Sector of your Startup"
-              type="text"
-              value={formData.startUpSector}
-              onChange={handleChange}
-            />
-            <span className="text-brand">{errors.startUpSector}</span>
+            <label className="text-sm font-semibold mb-2">Startup Sector *</label>
+            <input name="startUpSector" value={formData.startUpSector} onChange={handleChange} placeholder="e.g. FinTech" className="input-style text-black" required />
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="headquarter" className="mt-1 font-medium">
-              Startup Headquarter <span className="text-brand required-star" aria-hidden="true">*</span>
-            </label>
-            <input
-              id="headquarter"
-              name="headquarter"
-              required
-              aria-invalid={errors.headquarter ? "true" : "false"}
-              className="bg-white/5 text-white rounded-md px-3 py-2 border border-white/6 focus:outline-none focus:ring-2 focus:ring-[var(--brand-2)] transition"
-              placeholder="Place of Startup Headquarter"
-              type="text"
-              value={formData.headquarter}
-              onChange={handleChange}
-            />
-            <span className="text-brand">{errors.headquarter}</span>
+            <label className="text-sm font-semibold mb-2">Headquarter *</label>
+            <input name="headquarter" value={formData.headquarter} onChange={handleChange} placeholder="e.g. Nagpur" className="input-style text-black" required />
           </div>
 
-          <div className="flex flex-col">
-            <label htmlFor="linkedin" className="mt-1 font-medium">
-              LinkedIn/Website of your Startup <span className="text-brand required-star" aria-hidden="true">*</span>
-            </label>
-            <input
-              id="linkedin"
-              name="linkedin"
-              required
-              aria-invalid={errors.linkedin ? "true" : "false"}
-              className="bg-white/5 text-white rounded-md px-3 py-2 border border-white/6 focus:outline-none focus:ring-2 focus:ring-[var(--brand-2)] transition"
-              placeholder="Enter your LinkedIn or Website URL"
-              type="text"
-              value={formData.linkedin}
-              onChange={handleChange}
-            />
-            <span className="text-brand">{errors.linkedin}</span>
+          <div className="flex flex-col md:col-span-2">
+            <label className="text-sm font-semibold mb-2">LinkedIn / Website *</label>
+            <input name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="https://linkedin.com/company/..." className="input-style text-black" required />
           </div>
 
-          <div className="md:col-span-2 flex flex-col">
-            <label htmlFor="description" className="mt-1 font-medium">
-              Description of Startup <span className="text-brand required-star" aria-hidden="true">*</span>
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              required
-              aria-invalid={errors.description ? "true" : "false"}
-              placeholder="Brief description of idea/product/service"
-              className="bg-white/5 text-white rounded-md px-3 py-2 border border-white/6 focus:outline-none focus:ring-2 focus:ring-[var(--brand-2)] transition"
-              cols="30"
-              rows="4"
-              value={formData.description}
-              onChange={handleChange}
-            ></textarea>
-            <span className="text-brand">{errors.description}</span>
+          <div className="flex flex-col md:col-span-2">
+            <label className="text-sm font-semibold mb-2">Description *</label>
+            <textarea name="description" value={formData.description} onChange={handleChange} rows="3" className="input-style text-black" placeholder="Briefly describe your startup..." required />
           </div>
 
+          {/* --- STEP 2 TEXT & LINK ADDED BACK --- */}
           <div className="md:col-span-2">
             <div className="mb-2 mt-2 text-white text-lg">
               Step 2:{" "}
               <a
-                className="text-[#4a4adf] underline text-lg"
+                className="text-[#4a4adf] underline text-lg font-bold"
                 href="https://pay.vnit.ac.in/event"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Generate Challan
               </a>
-              <p className="mb-2 px-1 md:px-5 text-white text-sm md:text-lg">
-                Please visit the link, complete the payment, and then copy and
-                paste the Challan number from the official VNIT payment site.
+              <p className="mb-4 mt-2 px-1 text-slate-300 text-sm md:text-base leading-relaxed">
+                Please visit the link above, complete the payment, and then copy and
+                paste the Challan number from the official VNIT payment site into the field below.
               </p>
             </div>
 
-            <label htmlFor="challan" className="mb-2 text-lg font-medium">
-              Challan Number
-            </label>
-            <input
-              type="text"
-              id="challan"
-              name="challan"
-              value={formData.challan}
-              onChange={handleChallanChange}
-              className="bg-white/5 text-white rounded-md px-3 py-2 border border-white/6 focus:outline-none focus:ring-2 focus:ring-[var(--brand-2)] mb-2 transition w-full"
+            <label className="text-sm font-semibold mb-2">Challan Number *</label>
+            <input 
+              name="challan" 
+              value={formData.challan} 
+              onChange={handleChange} 
+              className="input-style text-black border-brand/50" 
+              placeholder="Paste your VNIT Challan ID here" 
+              required 
             />
-            {challanError && (
-              <div className="text-brand">{challanError}</div>
-            )}
           </div>
 
-          <div className="md:col-span-2 flex items-center">
-            <label htmlFor="declaration" className="flex items-center cursor-pointer">
-              <input
-                id="declaration"
-                type="checkbox"
-                className="hidden-checkbox"
-                checked={checkboxChecked}
-                aria-required={true}
-                aria-invalid={errors.declaration ? 'true' : 'false'}
-                onChange={() => { setCheckboxChecked(!checkboxChecked); setErrors(prev => ({...prev, declaration: ''})); }}
-              />
-              <span className="checkbox-custom mr-3" aria-hidden="true"></span>
-              <span className="ml-1 text-white">I hereby declare that I have read the brochure and the details furnished above are correct to the best of my knowledge.</span>
-            </label>
-            {errors.declaration && <div className="text-brand mt-2">{errors.declaration}</div>}
+          <div className="md:col-span-2 flex items-start gap-3 py-2">
+            <input type="checkbox" checked={checkboxChecked} onChange={() => setCheckboxChecked(!checkboxChecked)} className="mt-1" />
+            <p className="text-xs text-slate-300">I declare that the details furnished above are correct to my knowledge.</p>
           </div>
-
-          <div className="md:col-span-2 flex justify-center">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full md:w-auto rounded-full py-3 px-8 text-lg text-white shadow-md hover:scale-105 transition disabled:opacity-60 btn-gradient"
-            >
-              {loading ? "LOADING..." : "REGISTER"}
+          
+          <div className="md:col-span-2 flex justify-center mt-4">
+            <button type="submit" disabled={loading} className="w-full md:w-auto rounded-full py-4 px-12 text-lg font-bold text-white btn-gradient hover:scale-105 disabled:opacity-50 transition-all">
+              {loading ? "REGISTERING..." : "SUBMIT TO EXPO"}
             </button>
           </div>
         </form>
-        <p className="m-auto text-white">{message}</p>
+        {statusMessage && <p className="text-red-500 mt-4 text-center text-sm font-medium">{statusMessage}</p>}
       </motion.div>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+            <motion.div initial={{ scale: 0.8, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-slate-900 border border-brand/20 p-8 rounded-3xl text-center max-w-sm shadow-2xl">
+              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckIcon className="w-8 h-8 text-green-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Registration Received!</h3>
+              <p className="text-slate-400 text-sm mb-6">Your data has been saved to the central repository. See you at the Expo!</p>
+              <button onClick={() => setShowSuccess(false)} className="w-full py-3 bg-brand text-white font-bold rounded-xl transition-all">CLOSE</button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function CheckIcon(props) {
+  return (
+    <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+    </svg>
   );
 }
