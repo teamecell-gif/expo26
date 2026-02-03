@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: "http://localhost:5000" // Ensure this matches your backend PORT
+  baseURL: "https://expo-backend-wv2k.onrender.com" // Ensure this matches your backend PORT
 });
 
 export const registerUser = async (formData) => {
